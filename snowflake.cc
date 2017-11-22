@@ -79,7 +79,7 @@ decay_screen(void)
 {
   // decay
   for (byte i = 0; i < nled; i++) {
-    screen[i] = screen[i] / 2 + screen[i] / 4;
+    screen[i] = screen[i] / 2 + screen[i] / 4 + screen[i] / 8 + screen[i] / 16;
   }
 }
 
