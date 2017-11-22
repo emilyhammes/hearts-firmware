@@ -32,13 +32,13 @@ static byte plex_screen, plex_screen_reverse;
 static volatile byte cycles;
 
 
-static byte
+static uint16_t
 random(void)
 {
-  static byte seed = 1;
-  seed ^= seed << 1;
-  seed ^= seed >> 1;
-  seed ^= seed << 2;
+  static uint16_t seed = 1;
+  seed ^= seed << 13;
+  seed ^= seed >> 9;
+  seed ^= seed << 7;
   return (seed);
 }
 
