@@ -4,6 +4,7 @@
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 
 FUSES =
@@ -29,17 +30,18 @@ static byte plex_row, plex_col;
 static byte plex_pos;
 static byte plex_screen, plex_screen_reverse;
 
+static uint16_t random_seed = 1;
+
 static volatile byte cycles;
 
 
 static uint16_t
 random(void)
 {
-  static uint16_t seed = 1;
-  seed ^= seed << 13;
-  seed ^= seed >> 9;
-  seed ^= seed << 7;
-  return (seed);
+  random_seed ^= random_seed << 13;
+  random_seed ^= random_seed >> 9;
+  random_seed ^= random_seed << 7;
+  return (random_seed);
 }
 
 static void
@@ -68,7 +70,7 @@ plex_cycle(void)
   }
 
   byte mode = (1 << pins[plex_row]) | (1 << pins[plex_col]);
-  byte val = (screen[plex_pos] > plex_screen_reverse) << pins[plex_row];
+  byte val = ((screen[plex_pos] & plex_screen_max) > plex_screen_reverse) << pins[plex_row];
   //DDRB = 0; // remove ghosting
   PORTB = val;
   DDRB = mode;
@@ -79,7 +81,15 @@ decay_screen(void)
 {
   // decay
   for (byte i = 0; i < nled; i++) {
-    screen[i] = screen[i] / 2 + screen[i] / 4 + screen[i] / 8 + screen[i] / 16;
+    byte val = screen[i] & plex_screen_max;
+    byte flags = (screen[i] & ~plex_screen_max) >> 6;
+    screen[i] = flags | val / 2;
+    if (flags < 3)
+      screen[i] += val / 4;
+    if (flags < 2)
+      screen[i] += val / 8;
+    if (flags < 1)
+      screen[i] += val / 16;
   }
 }
 
@@ -92,6 +102,7 @@ add_flash(void)
   } while (target > nled);
 
   screen[target] = plex_screen_max;
+  //screen[target] |= ((random() & 3) << 6);
 }
 
 static void
@@ -122,6 +133,10 @@ main(void)
 {
   // NOTE: the timer is very CPU intensive, so all _delay_*()
   // functions run orders of magnitude too long.
+
+  random_seed = eeprom_read_word(0);
+  if (random_seed == 0)
+    random_seed = 1;
 
   setup_timer();
   fill_screen(plex_screen_max);
