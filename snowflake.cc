@@ -102,7 +102,7 @@ add_flash(void)
   } while (target > nled);
 
   screen[target] = plex_screen_max;
-  //screen[target] |= ((random() & 3) << 6);
+  screen[target] |= ((random() & 3) << 6);
 }
 
 static void
@@ -147,17 +147,17 @@ main(void)
   }
  _delay_ms(30);
 
-  byte last_cycles = 0;
+  byte last_decay = 0;
+  byte last_flash = 0;
   for (;;) {
-    if (cycles != last_cycles) {
+    if (cycles == (byte)(last_decay + 3)) {
       decay_screen();
-      last_cycles = cycles;
+      last_decay = cycles;
     }
 
-    if (cycles >= 2) {
+    if (cycles == (byte)(last_flash + 3)) {
       add_flash();
-      cycles = 0;
-      last_cycles = 0;
+      last_flash = cycles;
     }
   }
 }
