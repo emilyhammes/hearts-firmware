@@ -3,7 +3,7 @@ PROG= snowflake
 CC= avr-gcc
 CXX= avr-g++
 CPPFLAGS+= -g -mmcu=attiny13a -Wall -Wextra -O2 -flto -fwhole-program
-CXXFLAGS+= -std=gnu++1z
+CXXFLAGS+= -std=gnu++1y
 PROGRAMMER= avrispmkII
 
 seed:= $(shell hexdump -n 2 -e '2/1 "%\#x "' /dev/urandom)
