@@ -13,5 +13,14 @@ all: ${PROG}
 flash: ${PROG}
 	avrdude -c ${PROGRAMMER} -p t13 -v -U hfuse:w:$^:e -U lfuse:w:$^:e -U flash:w:$^:e -U eeprom:w:'${seed}':m
 
+flash-bulk: ${PROG}
+	@while read; do \
+		if ${MAKE} flash; then \
+			beep -f 400; \
+		else \
+			beep -f 800; \
+		fi; \
+	done
+
 clean:
 	-rm -f ${PROG}
