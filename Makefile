@@ -19,6 +19,7 @@ flash-bulk: ${PROG}
 			beep -f 400; \
 		else \
 			beep -f 800; \
+			printf "\n\n\nFAIL!\n" >&2; \
 		fi; \
 	done
 
