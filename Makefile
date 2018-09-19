@@ -1,4 +1,4 @@
-PROG= snowflake
+PROG= blink
 
 CC= avr-gcc
 CXX= avr-g++
@@ -8,7 +8,7 @@ PROGRAMMER= avrispmkII
 
 seed:= $(shell hexdump -n 2 -e '2/1 "%\#x "' /dev/urandom)
 
-all: ${PROG}
+all: ${PROG} ${PROG}.hex
 
 flash: ${PROG}
 	avrdude -c ${PROGRAMMER} -p t13 -v -U hfuse:w:$^:e -U lfuse:w:$^:e -U flash:w:$^:e -U eeprom:w:'${seed}':m
@@ -24,4 +24,7 @@ flash-bulk: ${PROG}
 	done
 
 clean:
-	-rm -f ${PROG}
+	-rm -f ${PROG} ${PROG}.hex
+
+${PROG}.hex: ${PROG}
+	avr-objcopy -I elf32-avr -O ihex $^ $@

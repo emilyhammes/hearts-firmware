@@ -17,14 +17,15 @@ FUSES =
 typedef uint8_t byte;
 
 static const byte pins[] = {0, 1, 2, 3, 4};  // in AVR PORTB terms
-static const byte nled = 19;
+static const byte nled = 20;
 static const byte plex_screen_max = 63; // max supported brightness value
 static const long refresh_rate = 50;    // Hz
 
-static const byte skip_row = 1;
-static const byte skip_col = 4;
+// set to row/col to skip one LED, or set to out of range value to disable skip
+static const byte skip_row = 255;
+static const byte skip_col = 255;
 
-static byte screen[nled];
+static volatile byte screen[nled];
 
 static byte plex_row, plex_col;
 static byte plex_pos;
@@ -143,9 +144,17 @@ main(void)
   _delay_ms(30);
   while (screen[0] != 0) {
     decay_screen();
-    _delay_ms(2);
+    _delay_us(100);
   }
- _delay_ms(30);
+  _delay_ms(10);
+#ifdef DEBUG
+  for (int pos = 0; pos < nled; pos++) {
+    screen[pos] = plex_screen_max;
+    _delay_ms(10);
+    screen[pos] = 0;
+  }
+  _delay_ms(10);
+#endif
 
   byte last_decay = 0;
   byte last_flash = 0;
